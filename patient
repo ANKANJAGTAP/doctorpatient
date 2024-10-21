@@ -1,0 +1,337 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include<bits/stdc++.h>
+
+using namespace std;
+
+class Patient {
+private:
+    string name;
+    int age;
+    string phoneNumber;
+    string password; 
+    string uniqueid;
+    
+
+    public:
+    void setID(const string &id){
+         uniqueid=id;
+    }
+
+    void getID() const {
+        if(uniqueid.empty())
+        cout<<"\n\t\t\t Unique ID is not generated \n"<<endl;
+        else
+        cout<<"Your Unique ID is :"<<uniqueid<<endl;
+            
+    }
+    string generateUniqueID();
+};
+
+string Patient::generateUniqueID() {                              // Method to generate a unique 6 digit ID
+        string id;
+        
+        srand((unsigned)time(0) + rand());                   // Ensure more randomness
+        
+            id = "";
+            for (int i = 0; i < 6; ++i) {
+                id += '0' + rand() % 10;
+            }
+        
+        return id;
+    }
+
+class User {
+public:
+    string name, contact_number, email, password;
+
+    void getInput(); 
+    bool saveToFile(); 
+    bool checkIfUserExists(const string& emailToCheck); 
+    void userinfo(); 
+};
+
+class updateduser:public User {
+public:
+
+void updateuserinfo();
+void getUserField(int choice);
+void updateField(int choice, const string& newValue);
+void updateFile();
+};
+
+
+
+void User::getInput() {
+        cout << "Enter Name: ";
+        getline(cin, name);
+        cout << "Enter Contact Number: ";
+        getline(cin, contact_number);
+        cout << "Enter Email ID: ";
+        getline(cin, email);
+        cout << "Enter Password: ";
+        getline(cin, password);
+    }
+
+bool User::saveToFile() {
+        ofstream file("users.txt", ios::app);
+        if (file) {
+            file << name << "," << contact_number << "," << email << "," << password << "\n";
+            file.close();
+            return true;
+        }
+        return false;
+    }
+
+bool User::checkIfUserExists(const string& emailToCheck) {
+        ifstream file("users.txt");
+        string line;
+        while (getline(file, line)) {
+            int pos = line.find(emailToCheck);
+            if (pos != string::npos) {
+                return true;
+            }
+        }
+        file.close();
+        return false;
+    }    
+
+void User::userinfo() {
+    cout << "Current Information:\n";
+    cout << "1. Name: " << name << "\n";
+    cout << "2. Contact Number: " << contact_number << "\n";
+    cout << "3. Email: " << email << "\n";
+    cout << "4. Password: " << password << "\n";
+    
+    }
+
+void updateduser::updateuserinfo(){
+        cout << "What would you like to update (1-4)?: ";
+        int choice;
+        cin >> choice;
+        cin.ignore();
+
+        cout << "Enter new value";
+        
+        string newValue;
+        getline(cin, newValue);
+        updateField(choice, newValue);
+        // updateFile();
+    }
+
+ 
+
+void updateduser::updateField(int choice, const string& newValue) {
+    switch (choice) {
+        case 1: name = newValue; break;
+        case 2: contact_number = newValue; break;
+        case 3: email = newValue; break;
+        case 4: password = newValue; break;
+    }
+}
+
+// void updateduser::updateFile() {
+//     ifstream file("users.txt");
+//     vector<string> lines;
+//     string line;
+//     while (getline(file, line)) {
+//         if (line.find(name) != string::npos) {
+//             line = name + "," + contact_number + "," + email + "," + password;
+//         }
+//         lines.push_back(line);
+//     }
+//     file.close();
+
+//     ofstream outFile("users.txt", ios::trunc);
+//     for (const auto& l : lines) {
+//         outFile << l << endl;
+//     }
+//     outFile.close();
+// }
+
+void signUp() {
+    User user;
+    user.getInput();
+
+    if (user.checkIfUserExists(user.email)) {
+        cout << "User already exists with this email.\n";
+        return;
+    }
+
+    if (user.saveToFile()) {
+        cout << "User registered successfully.\n";
+    } else {
+        cout << "Failed to save user data.\n";
+    }
+}
+
+bool loginUser() {
+    string email, password;
+    cout << "Enter Email ID: ";
+    getline(cin, email);
+    cout << "Enter Password: ";
+    getline(cin, password);
+
+    ifstream file("users.txt");
+    string line;
+    while (getline(file, line)) {
+        size_t posEmail = line.find(email);
+        size_t posPassword = line.find(password);
+        if (posEmail != string::npos && posPassword != string::npos && posPassword > posEmail) {
+            cout << "Login successful!\n";
+            return true;
+        }
+    }
+    cout << "Invalid email or password.\n";
+    return false;
+
+}
+
+class Appointment {
+    public:
+    string patient_name;
+    int age;
+    string phone_number;
+    string preferred_time;
+    string preferred_date;
+};
+
+string book_appointment() {
+    Appointment appointment;
+    cout << "Enter patient's name: ";
+    getline(cin, appointment.patient_name);
+    cout << "Enter patient's age: ";
+    cin >> appointment.age;
+    cin.ignore(); 
+    cout << "Enter patient's phone number: ";
+    getline(cin, appointment.phone_number);
+    cout << "Enter preferred time: ";
+    getline(cin, appointment.preferred_time);
+    cout << "Enter preferred date (YYYY-MM-DD): ";
+    getline(cin, appointment.preferred_date);
+
+    // Displaying Entered Information
+    cout << "\nPlease confirm the entered information:\n";
+    cout << "Patient's Name: " << appointment.patient_name << endl;
+    cout << "Age: " << appointment.age << endl;
+    cout << "Phone Number: " << appointment.phone_number << endl;
+    cout << "Preferred Time: " << appointment.preferred_time << endl;
+    cout << "Preferred Date: " << appointment.preferred_date << endl;
+
+    // Confirmation
+    char confirm;
+    cout << "\nIs the entered information correct? (Y/N): ";
+    cin >> confirm;
+    if (confirm=='N') {
+        cout << "Please re-enter the information.\n";
+        return book_appointment();
+    }
+    
+
+    // Write the appointment details to the file
+    ofstream appo("appointments.txt", ios::app);
+    if ( appo.is_open() ) {
+ appo << "Patient Name: " << appointment.patient_name << endl;
+ appo << "Age: " << appointment.age << endl;
+ appo << "Phone Number: " << appointment.phone_number << endl;
+ appo << "Preferred Time: " << appointment.preferred_time << endl;
+ appo << "Preferred Date: " << appointment.preferred_date << endl << endl;
+
+    cout << "Appointment booked successfully!\n";
+ appo.close();
+    }
+    else {
+        cerr<<"Unable to open file for writing." <<endl;
+    }
+}
+
+int main() {
+    Patient p;
+    Appointment appointment;
+    int choice;
+    string id;
+    cout << "\t\t\tWelcome ! Please Signup or Login\n\t\t\t1: Sign Up\n\t\t\t2: Login\n\t\t\tEnter your choice: ";
+    cin >> choice;
+    cin.ignore();
+
+    switch (choice) {
+        case 1:
+            signUp();
+            break;
+        case 2:
+            if (loginUser()==false) {
+                cout<<"Enter Again"<<endl;
+                loginUser();}
+            else{
+            cout << "Welcome back!\n";
+            }
+            break;
+        default:
+            cout << "Invalid choice\n";
+            break;
+    }
+
+do{
+  cout<<"\n\n\t\t\t\t======================\n";
+	cout<<"\t\t\t\tWelcome to MedPlus";
+	cout<<"\n\t\t\t\t======================\n";
+
+    cout<<"\t\t\t\t    ::MAIN MENU::\n";
+		cout<<"\n\t\t\t\t0. EXIT";
+        cout<<"\n\t\t\t\t1. Generate Epic ID";
+		cout<<"\n\t\t\t\t2. View Epic ID";
+		cout<<"\n\t\t\t\t3. Book New Appointment";
+		cout<<"\n\t\t\t\t4. Cancel an Appointment";
+		cout<<"\n\t\t\t\t5. Update Personal Information";
+		cout<<"\n\t\t\t\t6. View Medical Record";
+		cout<<"\n\t\t\t\t7. Add Medical Record";
+		cout<<"\n\t\t\t\t8. Log Out";
+		
+		cout<<"\n\n\t\t\t\tSelect Your Option (0-8): ";
+    cin >> choice;
+    cin.ignore();
+
+   switch(choice){
+   case 0 : cout<<"Exited Succesfully "<<endl;
+            return 0;
+            break;
+
+   case 1 : system("CLS");
+            cout<<"Your Generated ID is"<<endl;
+            id = p.generateUniqueID();
+            p.setID(id);
+            cout<<id<<endl;
+            break;
+
+   case 2:  system("CLS");
+            p.getID();  
+            break;   
+   
+   case 3: system("CLS");
+           book_appointment();
+           break;
+
+   case 5: system("CLS");
+           if(loginUser())
+           {
+            User user;
+            updateduser newuser;
+            user.userinfo();
+            newuser.updateuserinfo();
+           }
+           break;
+   case 8: system("CLS");
+           main();
+           break;
+   default: cout<<"Invalid Choice"<<endl;        
+   }
+   
+   
+           
+}
+
+while(choice!=0);
+    return 0;
+
+}
